@@ -3,11 +3,11 @@ import { getState, patchState, signalStore, withMethods, withState } from "@ngrx
 import { KeyButton } from "../interfaces/key-button";
 
 type BoxState = {
-  boxes: Signal<Map<number, KeyButton>>; // Stores boxes as a signal of a Map
+  boxes: Map<number, KeyButton>; // Stores boxes as a signal of a Map
 };
 
 const initialState: BoxState = {
-  boxes: signal(new Map<number, KeyButton>()),
+  boxes: new Map<number, KeyButton>(),
 };
 
 export const boxStore = signalStore(
@@ -23,7 +23,7 @@ export const boxStore = signalStore(
        */
       addBox(index: number, value: KeyButton): void {
         patchState(store, (state) => ({
-          boxes: signal(new Map([...state.boxes(), [index, value]])),
+          boxes: new Map([...state.boxes.entries(), [index, value]]),
         }));
       },
 
@@ -34,7 +34,7 @@ export const boxStore = signalStore(
        */
       getBoxByIndex(index: number): Signal<KeyButton | undefined> {
         return computed(() => {
-          const boxesMap = getState(store).boxes();
+          const boxesMap = getState(store).boxes;
           return boxesMap.get(index);
         });
       },
@@ -44,7 +44,7 @@ export const boxStore = signalStore(
        */
       clearBoxes(): void {
         patchState(store, () => ({
-          boxes: signal(new Map()), // Reset the boxes map to an empty instance
+          boxes: new Map(), // Reset the boxes map to an empty instance
         }));
       },
 
@@ -54,7 +54,7 @@ export const boxStore = signalStore(
        */
       calculateSum(): Signal<number> {
         return computed(() => {
-          const boxes = getState(store).boxes();
+          const boxes = getState(store).boxes;
           return Array.from(boxes.values()).reduce((acc, box) => acc + box.key, 0);
         });
       },
@@ -67,7 +67,7 @@ export const boxStore = signalStore(
         if (savedBoxes) {
           const parsedBoxes = new Map<number, KeyButton>(JSON.parse(savedBoxes));
           patchState(store, () => ({
-            boxes: signal(parsedBoxes),
+            boxes: parsedBoxes,
           }));
         }
       },
@@ -76,7 +76,7 @@ export const boxStore = signalStore(
        * Writes the current boxes state to the storage.
        */
       writeToStorage(): void {
-        const boxes = getState(store).boxes();
+        const boxes = getState(store).boxes;
         localStorage.setItem('boxes', JSON.stringify(Array.from(boxes.entries())));
       },
 
